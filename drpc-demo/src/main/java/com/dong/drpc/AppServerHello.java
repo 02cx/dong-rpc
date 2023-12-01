@@ -19,12 +19,14 @@ public class AppServerHello {
 
     public void start() {
 
-
+        // boss 负责处理请求本身，然后将请求分发给worker
         NioEventLoopGroup boss = new NioEventLoopGroup();
         NioEventLoopGroup worker = new NioEventLoopGroup();
 
         try {
+            // 启动服务器的引导类
             ServerBootstrap serverBootstrap = new ServerBootstrap();
+            // 配置服务器
             serverBootstrap.group(boss, worker)
                     .channel(NioServerSocketChannel.class)
                     .localAddress(new InetSocketAddress(port)) // 设置监听端口

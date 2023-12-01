@@ -21,13 +21,15 @@ public class AppClientHello {
     }
 
     public void run() {
+        // 客户端干活的线程池 I/O线程池
         NioEventLoopGroup group = new NioEventLoopGroup();
 
-        Bootstrap bootstrap = new Bootstrap(); // 客户端干活的线程池 I/O线程池
         try {
+            // 启动客户端的辅助类
+            Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group)
-                    .channel(NioSocketChannel.class)
-                    .remoteAddress(new InetSocketAddress(host, port)) // 实例化一个 channel
+                    .channel(NioSocketChannel.class)// 实例化一个 channel
+                    .remoteAddress(new InetSocketAddress(host, port))
                     .handler(new ChannelInitializer<SocketChannel>() { // channel 初始化配置
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
@@ -36,7 +38,7 @@ public class AppClientHello {
                         }
                     });
 
-            // 连接到远程节点，等待连接
+            // 尝试连接服务器，等待连接
             ChannelFuture channelFuture = bootstrap.connect().sync();
             // 发送消息到服务端
             channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer("Hello Server"
