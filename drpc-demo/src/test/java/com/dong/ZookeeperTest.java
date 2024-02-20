@@ -21,7 +21,8 @@ public class ZookeeperTest {
     @Before
     public void testInitZK()   {
         // 定义连接参数
-         String connectString = "127.0.0.1:2181";
+         //String connectString = "127.0.0.1:2181";
+         String connectString = "192.168.183.130:2181";
          // 定义超时时间
          int sessionTimeout = 10000;
         try {
