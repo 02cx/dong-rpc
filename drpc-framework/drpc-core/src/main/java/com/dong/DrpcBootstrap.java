@@ -9,7 +9,10 @@ import com.dong.discovery.RegisterConfig;
 import com.dong.utils.zookeeper.ZookeeperUtils;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Hello world!
@@ -26,7 +29,11 @@ public class DrpcBootstrap {
     private ProtocolConfig protocolConfig;
     private int port = 8088;
 
+    // 注册中心
     private Register register;
+
+    // 维护已经发布的服务列表   key---->interface全限定名   value---->ServiceConfig
+    private static final Map<String,ServiceConfig<?>> SERVER_LIST = new ConcurrentHashMap<>(16);
 
 
     public DrpcBootstrap() {
@@ -84,7 +91,12 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap publish(ServiceConfig<?> service) {
+        // 实现注册
         register.register(service);
+        // 服务调用方根据接口名，方法名，参数列表发起调用，服务提供者怎么知道是哪一个实现？
+        // 1.new 一个   2.spring   beanFactory.getBean(Class)  3.自己维护映射关系
+        SERVER_LIST.put(service.getInterface().getName(),service);
+
         return this;
     }
 
