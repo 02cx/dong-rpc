@@ -4,8 +4,13 @@ package com.dong;
 
 
 
+import com.dong.utils.NetUtils;
+import com.dong.utils.zookeeper.ZookeeperNode;
+import com.dong.utils.zookeeper.ZookeeperUtils;
 import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.ZooKeeper;
 
 import java.util.List;
 
@@ -16,7 +21,16 @@ import java.util.List;
 public class DrpcBootstrap {
 
     // DrpcBootstrap是一个单例，一个应用程序一个示例
-    public static DrpcBootstrap drpcBootstrap = new DrpcBootstrap();
+    public static final DrpcBootstrap drpcBootstrap = new DrpcBootstrap();
+
+    // 定义一些初始配置
+    private String applicationName;
+    private RegisterConfig registerConfig;
+    private ProtocolConfig protocolConfig;
+    private int port = 8088;
+
+    private ZooKeeper zooKeeper;
+
 
     public DrpcBootstrap() {
         // 构造启动引导程序时需要做的一些配置
@@ -37,6 +51,7 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap application(String applicationName) {
+        this.applicationName = applicationName;
         return this;
     }
 
@@ -47,6 +62,8 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap register(RegisterConfig registerConfig) {
+        this.registerConfig = registerConfig;
+        zooKeeper = ZookeeperUtils.createZookeeper();
         return this;
     }
 
@@ -57,6 +74,7 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap protocol(ProtocolConfig protocolConfig) {
+        this.protocolConfig = protocolConfig;
         log.debug("当前工程使用的协议：" + protocolConfig.toString());
 
         return this;
@@ -69,6 +87,21 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap publish(ServiceConfig<?> service) {
+        // 服务节点名称
+        String parentNode = Constant.BASE_PROVIDER_PATH + "/" + service.getInterface();
+        // 创建一个持久节点
+        if(!ZookeeperUtils.exists(zooKeeper,parentNode,null)){
+            ZookeeperNode zookeeperNode = new ZookeeperNode(parentNode, null);
+            ZookeeperUtils.createNode(zooKeeper, zookeeperNode, null, CreateMode.PERSISTENT);
+        }
+
+        // 创建本机临时节点，  ip:port
+        String node = parentNode + "/" + NetUtils.getIpAddress() + ":" + port;
+        if(!ZookeeperUtils.exists(zooKeeper,node,null)){
+            ZookeeperNode zookeeperNode = new ZookeeperNode(node, null);
+            ZookeeperUtils.createNode(zooKeeper, zookeeperNode, null, CreateMode.EPHEMERAL);
+        }
+
 
         log.debug("{}服务已注册", service.toString());
 
@@ -89,7 +122,11 @@ public class DrpcBootstrap {
      * 启动netty服务
      */
     public void start() {
-
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
      /*
