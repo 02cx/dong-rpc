@@ -1,7 +1,7 @@
 package com.dong;
 
+import com.dong.discovery.RegisterConfig;
 import com.dong.impl.HelloDrpcImpl;
-import lombok.extern.slf4j.Slf4j;
 
 public class ProviderApplication {
 

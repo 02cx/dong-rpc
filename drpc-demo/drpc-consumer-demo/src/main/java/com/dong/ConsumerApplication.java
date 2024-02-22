@@ -1,6 +1,8 @@
 package com.dong;
 
 
+import com.dong.discovery.RegisterConfig;
+
 /**
  * Hello world!
  *

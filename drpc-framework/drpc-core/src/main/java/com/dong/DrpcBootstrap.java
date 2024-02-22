@@ -4,13 +4,10 @@ package com.dong;
 
 
 
-import com.dong.utils.NetUtils;
-import com.dong.utils.zookeeper.ZookeeperNode;
+import com.dong.discovery.Register;
+import com.dong.discovery.RegisterConfig;
 import com.dong.utils.zookeeper.ZookeeperUtils;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooKeeper;
 
 import java.util.List;
 
@@ -29,7 +26,7 @@ public class DrpcBootstrap {
     private ProtocolConfig protocolConfig;
     private int port = 8088;
 
-    private ZooKeeper zooKeeper;
+    private Register register;
 
 
     public DrpcBootstrap() {
@@ -62,8 +59,8 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap register(RegisterConfig registerConfig) {
-        this.registerConfig = registerConfig;
-        zooKeeper = ZookeeperUtils.createZookeeper();
+        // 类似工厂方法模式
+        this.register = registerConfig.getRegister();
         return this;
     }
 
@@ -87,24 +84,7 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap publish(ServiceConfig<?> service) {
-        // 服务节点名称
-        String parentNode = Constant.BASE_PROVIDER_PATH + "/" + service.getInterface();
-        // 创建一个持久节点
-        if(!ZookeeperUtils.exists(zooKeeper,parentNode,null)){
-            ZookeeperNode zookeeperNode = new ZookeeperNode(parentNode, null);
-            ZookeeperUtils.createNode(zooKeeper, zookeeperNode, null, CreateMode.PERSISTENT);
-        }
-
-        // 创建本机临时节点，  ip:port
-        String node = parentNode + "/" + NetUtils.getIpAddress() + ":" + port;
-        if(!ZookeeperUtils.exists(zooKeeper,node,null)){
-            ZookeeperNode zookeeperNode = new ZookeeperNode(node, null);
-            ZookeeperUtils.createNode(zooKeeper, zookeeperNode, null, CreateMode.EPHEMERAL);
-        }
-
-
-        log.debug("{}服务已注册", service.toString());
-
+        register.register(service);
         return this;
     }
 
@@ -114,7 +94,10 @@ public class DrpcBootstrap {
      * @param listService 封装需要发布的服务的集合
      * @return this
      */
-    public DrpcBootstrap publish(List<?> listService) {
+    public DrpcBootstrap publish(List<ServiceConfig<?>> listService) {
+        listService.forEach(service -> {
+            this.publish(service);
+        });
         return this;
     }
 
