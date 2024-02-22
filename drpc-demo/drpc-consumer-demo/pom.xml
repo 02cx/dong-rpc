@@ -3,28 +3,30 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.dong</groupId>
-        <artifactId>dong-drpc</artifactId>
+        <artifactId>drpc-demo</artifactId>
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>drpc-manager</artifactId>
+    <artifactId>drpc-consumer-demo</artifactId>
     <packaging>jar</packaging>
 
-    <name>drpc-manager</name>
+    <name>drpc-consumer-demo</name>
     <url>http://maven.apache.org</url>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
+            <groupId>com.dong</groupId>
+            <artifactId>drpc-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.dong</groupId>
+            <artifactId>drpc-core</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 </project>

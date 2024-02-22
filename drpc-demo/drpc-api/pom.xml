@@ -3,23 +3,20 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.dong</groupId>
-        <artifactId>dong-drpc</artifactId>
+        <artifactId>drpc-demo</artifactId>
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>drpc-framework</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>drpc-api</artifactId>
+    <packaging>jar</packaging>
 
-    <name>drpc-framework</name>
-    <modules>
-        <module>drpc-common</module>
-        <module>drpc-core</module>
-    </modules>
+    <name>drpc-api</name>
+    <url>http://maven.apache.org</url>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <dependencies>
+    </dependencies>
 </project>
