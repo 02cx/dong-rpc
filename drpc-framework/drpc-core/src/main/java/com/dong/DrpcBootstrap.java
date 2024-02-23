@@ -8,6 +8,7 @@ import com.dong.discovery.Register;
 import com.dong.discovery.RegisterConfig;
 import com.dong.utils.zookeeper.ZookeeperUtils;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -38,6 +39,9 @@ public class DrpcBootstrap {
 
     // 注册中心
     private Register register;
+
+    // 缓存channel连接
+    public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE  = new ConcurrentHashMap<>(16);
 
     // 维护已经发布的服务列表   key---->interface全限定名   value---->ServiceConfig
     private static final Map<String,ServiceConfig<?>> SERVER_LIST = new ConcurrentHashMap<>(16);
