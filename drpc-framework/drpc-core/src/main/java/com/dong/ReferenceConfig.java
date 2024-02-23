@@ -6,6 +6,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -18,6 +19,8 @@ import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class ReferenceConfig<T> {
@@ -54,18 +57,37 @@ public class ReferenceConfig<T> {
                 Channel channel = DrpcBootstrap.CHANNEL_CACHE.get(inetSocketAddress);
                 if (channel == null) {
 
-                    try {
-                        Bootstrap bootstrap = NettyBootstrapInitializer.getBootstrap();
-                        // 尝试连接服务器，等待连接
-                        channel = bootstrap.connect(inetSocketAddress).sync().channel();
-                        // 缓存channel
-                        DrpcBootstrap.CHANNEL_CACHE.put(inetSocketAddress,channel);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    // 尝试连接服务器，等待连接
+                    // channel = NettyBootstrapInitializer.getBootstrap().connect(inetSocketAddress).sync().channel();
+
+                    // 使用addListener执行的异步操作
+                    CompletableFuture<Channel> channelFuture = new CompletableFuture<>();
+                    NettyBootstrapInitializer.getBootstrap().connect(inetSocketAddress).addListener(
+                            (ChannelFutureListener) promise -> {
+                                if(promise.isDone()){
+                                    // 异步的
+                                    log.debug("已经和【{}】建立连接",inetSocketAddress);
+                                    channelFuture.complete(promise.channel());
+                                }else if(!promise.isSuccess()){
+                                    channelFuture.completeExceptionally(promise.cause());
+                                }
+                            }
+                    );
+                    // 阻塞获取channel
+                     channel = channelFuture.get(3, TimeUnit.SECONDS);
+                    // 缓存channel
+                    DrpcBootstrap.CHANNEL_CACHE.put(inetSocketAddress, channel);
+
                 }
 
-                ChannelFuture channelFuture = channel.writeAndFlush(new Object());
+                CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
+                ChannelFuture channelFuture = channel.writeAndFlush(new Object()).addListener(
+                        (ChannelFutureListener) promise -> {
+                            if(!promise.isSuccess()){
+                                objectCompletableFuture.completeExceptionally(promise.cause());
+                            }
+                        }
+                );
 
 
                 return null;
