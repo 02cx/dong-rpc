@@ -118,7 +118,7 @@ public class DrpcBootstrap {
      */
     public void start() {
         try {
-            Thread.sleep(10000);
+            Thread.sleep(100000000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -128,10 +128,10 @@ public class DrpcBootstrap {
         ----------------------------------服务调用方相关api--------------------------------------------------------------------------
      */
 
-    public DrpcBootstrap reference(ReferenceConfig<?> referenceConfig) {
+    public DrpcBootstrap reference(ReferenceConfig<?> reference) {
         // 在这个方法里是否可以拿到相关配置-----注册中心
         // 配置reference，将来调用get时，方便生成代理对象
-
+        reference.setRegister(register);
         return this;
     }
 
