@@ -81,7 +81,7 @@ public class ReferenceConfig<T> {
                 }
 
                 CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
-                ChannelFuture channelFuture = channel.writeAndFlush(new Object()).addListener(
+                ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.copiedBuffer("获取日期".getBytes())).addListener(
                         (ChannelFutureListener) promise -> {
                             if(!promise.isSuccess()){
                                 objectCompletableFuture.completeExceptionally(promise.cause());

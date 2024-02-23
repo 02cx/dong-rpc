@@ -1,14 +1,21 @@
 package com.dong;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.extern.slf4j.Slf4j;
+
+import java.nio.charset.Charset;
 
 /**
  * 提供 Bootstrap单例
  */
+@Slf4j
 public class NettyBootstrapInitializer {
 
     private static final Bootstrap bootstrap = new Bootstrap();
@@ -23,7 +30,12 @@ public class NettyBootstrapInitializer {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         // 在pipeline中添加我们自定义的 handler
-                        socketChannel.pipeline().addLast(null);
+                        socketChannel.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
+                            @Override
+                            protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+                                log.info("consumer接收的消息：{}",msg.toString(Charset.defaultCharset()));
+                            }
+                        });
                     }
                 });
     }
