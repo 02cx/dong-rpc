@@ -2,5 +2,5 @@ package com.dong;
 
 public interface HelloDrpc {
 
-    public void sayHi(String content);
+    public String sayHi(String content);
 }

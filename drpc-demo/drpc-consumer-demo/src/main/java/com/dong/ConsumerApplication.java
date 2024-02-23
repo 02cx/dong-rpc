@@ -2,11 +2,13 @@ package com.dong;
 
 
 import com.dong.discovery.RegisterConfig;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Hello world!
  *
  */
+@Slf4j
 public class ConsumerApplication {
 
     public static void main(String[] args) {
@@ -28,6 +30,7 @@ public class ConsumerApplication {
 
         // 获取代理对象
         HelloDrpc helloDrpc = reference.get();
-        helloDrpc.sayHi("hi drpc");
+        String result = helloDrpc.sayHi("hi drpc");
+        log.info("服务消费者接收到的消息：{}",result);
     }
 }

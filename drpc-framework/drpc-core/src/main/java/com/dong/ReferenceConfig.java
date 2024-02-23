@@ -81,6 +81,7 @@ public class ReferenceConfig<T> {
                 }
 
                 CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
+                DrpcBootstrap.PENDING_REQUEST.put(1L,objectCompletableFuture);
                 ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.copiedBuffer("获取日期".getBytes())).addListener(
                         (ChannelFutureListener) promise -> {
                             if(!promise.isSuccess()){
@@ -90,7 +91,7 @@ public class ReferenceConfig<T> {
                 );
 
 
-                return null;
+                return objectCompletableFuture.get(3,TimeUnit.SECONDS);
             }
         });
 

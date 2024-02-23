@@ -11,6 +11,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 提供 Bootstrap单例
@@ -33,7 +35,9 @@ public class NettyBootstrapInitializer {
                         socketChannel.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                             @Override
                             protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-                                log.info("consumer接收的消息：{}",msg.toString(Charset.defaultCharset()));
+                                String result = msg.toString(Charset.defaultCharset());
+                                CompletableFuture<Object> completableFuture = DrpcBootstrap.PENDING_REQUEST.get(1L);
+                                completableFuture.complete(result);
                             }
                         });
                     }

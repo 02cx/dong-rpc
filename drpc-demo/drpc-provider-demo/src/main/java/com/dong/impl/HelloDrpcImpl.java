@@ -4,7 +4,8 @@ import com.dong.HelloDrpc;
 
 public class HelloDrpcImpl implements HelloDrpc {
     @Override
-    public void sayHi(String content) {
+    public String sayHi(String content) {
         System.out.println(content);
+        return "";
     }
 }

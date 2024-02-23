@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -46,6 +47,9 @@ public class DrpcBootstrap {
 
     // 维护已经发布的服务列表   key---->interface全限定名   value---->ServiceConfig
     private static final Map<String,ServiceConfig<?>> SERVER_LIST = new ConcurrentHashMap<>(16);
+
+    // 定义全局的completableFuture
+    public static final Map<Long, CompletableFuture<Object>> PENDING_REQUEST = new ConcurrentHashMap<>(16);
 
 
     public DrpcBootstrap() {
