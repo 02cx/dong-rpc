@@ -7,8 +7,15 @@ package com.dong;
 import com.dong.discovery.Register;
 import com.dong.discovery.RegisterConfig;
 import com.dong.utils.zookeeper.ZookeeperUtils;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,10 +124,35 @@ public class DrpcBootstrap {
      * 启动netty服务
      */
     public void start() {
+        // boss 负责处理请求本身，然后将请求分发给worker
+        NioEventLoopGroup boss = new NioEventLoopGroup();
+        NioEventLoopGroup worker = new NioEventLoopGroup();
+
         try {
-            Thread.sleep(100000000);
+            // 启动服务器的引导类
+            ServerBootstrap serverBootstrap = new ServerBootstrap();
+            // 配置服务器
+            serverBootstrap.group(boss, worker)
+                    .channel(NioServerSocketChannel.class)
+                    .localAddress(new InetSocketAddress(port)) // 设置监听端口
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        // 核心   添加发送消息时的处理器
+                        @Override
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            socketChannel.pipeline().addLast(null);
+                        }
+                    });
+            //绑定服务器，该实例将提供有关IO操作的结果或状态的信息
+            ChannelFuture future = serverBootstrap.bind().sync();
+            log.debug("在" + future.channel().localAddress() + "上开启监听");
+
+            future.channel().closeFuture().sync();
+
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+        }finally {
+            worker.shutdownGracefully();
+            boss.shutdownGracefully();
         }
     }
 
