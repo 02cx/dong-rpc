@@ -5,6 +5,7 @@ import com.dong.NettyBootstrapInitializer;
 import com.dong.discovery.Register;
 import com.dong.exceptions.NetworkException;
 import com.dong.transport.message.DrpcRequest;
+import com.dong.transport.message.RequestPayload;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -48,8 +49,18 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
         Channel channel = getAvailableChannel(inetSocketAddress);
 
         // 封装报文
-        DrpcRequest.builder()
-                .requestId(1L);
+        RequestPayload payload = RequestPayload.builder()
+                .interfaceName(interfaceRef.getName())
+                .methodName(method.getName())
+                .parametersType(method.getParameterTypes())
+                .parametersValue(args).build();
+
+        DrpcRequest drpcRequest = DrpcRequest.builder()
+                .requestId(1L)
+                .compressType((byte) 1)
+                .serializeType((byte) 1)
+                .requestType((byte) 1)
+                .requestPayload(payload).build();
 
 
         // 发送消息，异步监听
