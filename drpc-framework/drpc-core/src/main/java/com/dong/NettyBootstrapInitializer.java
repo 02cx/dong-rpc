@@ -11,7 +11,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**

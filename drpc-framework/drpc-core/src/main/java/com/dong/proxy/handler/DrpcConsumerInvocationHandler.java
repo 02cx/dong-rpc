@@ -3,6 +3,8 @@ package com.dong.proxy.handler;
 import com.dong.DrpcBootstrap;
 import com.dong.NettyBootstrapInitializer;
 import com.dong.discovery.Register;
+import com.dong.exceptions.NetworkException;
+import com.dong.transport.message.DrpcRequest;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -17,7 +19,9 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Data
@@ -40,9 +44,12 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
         //WYD TODO 2024-02-23:当前只有一个服务
         InetSocketAddress inetSocketAddress = lookup.get(0);
         // 2.用netty连接服务器，发送调用的  服务名+方法名+参数列表，得到结果
-
         //获取通道
         Channel channel = getAvailableChannel(inetSocketAddress);
+
+        // 封装报文
+        DrpcRequest.builder()
+                .requestId(1L);
 
 
         // 发送消息，异步监听
@@ -81,7 +88,11 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
                     }
             );
             // 阻塞获取channel
-            channel = channelFuture.get(3, TimeUnit.SECONDS);
+            try {
+                channel = channelFuture.get(3, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                throw new NetworkException("获取通道失败");
+            }
             // 缓存channel
             DrpcBootstrap.CHANNEL_CACHE.put(inetSocketAddress, channel);
 
