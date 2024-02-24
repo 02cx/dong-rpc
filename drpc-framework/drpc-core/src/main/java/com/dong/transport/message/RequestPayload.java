@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 请求消息体：描述请求的服务接口、方法、参数列表，返回值类型
  */
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class RequestPayload {
+public class RequestPayload implements Serializable {
 
     // 接口名
     private String interfaceName;
