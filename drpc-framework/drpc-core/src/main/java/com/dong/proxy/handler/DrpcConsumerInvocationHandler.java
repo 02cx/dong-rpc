@@ -62,11 +62,10 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
                 .requestType((byte) 1)
                 .requestPayload(payload).build();
 
-
         // 发送消息，异步监听
         CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
         DrpcBootstrap.PENDING_REQUEST.put(1L,objectCompletableFuture);
-        ChannelFuture channelFuture = channel.writeAndFlush(Unpooled.copiedBuffer("获取日期".getBytes())).addListener(
+        ChannelFuture channelFuture = channel.writeAndFlush(drpcRequest).addListener(
                 (ChannelFutureListener) promise -> {
                     if(!promise.isSuccess()){
                         objectCompletableFuture.completeExceptionally(promise.cause());
@@ -78,6 +77,11 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
         return objectCompletableFuture.get(3,TimeUnit.SECONDS);
     }
 
+    /**
+     *  获取通道
+     * @param inetSocketAddress
+     * @return
+     */
     private Channel getAvailableChannel(InetSocketAddress inetSocketAddress) {
         Channel channel = DrpcBootstrap.CHANNEL_CACHE.get(inetSocketAddress);
         if (channel == null) {
