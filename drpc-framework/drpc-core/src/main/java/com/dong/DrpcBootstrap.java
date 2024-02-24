@@ -4,6 +4,7 @@ package com.dong;
 
 
 
+import com.dong.channel.handler.DrpcMessageDecoder;
 import com.dong.discovery.Register;
 import com.dong.discovery.RegisterConfig;
 import com.dong.utils.zookeeper.ZookeeperUtils;
@@ -14,6 +15,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -148,13 +151,9 @@ public class DrpcBootstrap {
                         // 核心   添加发送消息时的处理器
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
-                                @Override
-                                protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-                                    log.info("服务提供者收到消息：{}",msg.toString(Charset.defaultCharset()));
-                                    ctx.channel().writeAndFlush(Unpooled.copiedBuffer("2024-2-23".getBytes()));
-                                }
-                            });
+                            socketChannel.pipeline()
+                                    .addLast(new LoggingHandler(LogLevel.DEBUG))
+                                    .addLast(new DrpcMessageDecoder());
                         }
                     });
             //绑定服务器，该实例将提供有关IO操作的结果或状态的信息
