@@ -2,7 +2,9 @@ package com.dong.channel.handler;
 
 import com.dong.DrpcBootstrap;
 import com.dong.ServiceConfig;
+import com.dong.enumeration.ResponseCode;
 import com.dong.transport.message.DrpcRequest;
+import com.dong.transport.message.DrpcResponse;
 import com.dong.transport.message.RequestPayload;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -19,12 +21,17 @@ public class MethodCallHandler  extends SimpleChannelInboundHandler<DrpcRequest>
         // 1、获取负载内容
         RequestPayload requestPayload = drpcRequest.getRequestPayload();
         // 2、根据负载内容进行方法调用
-        Object object = callTargetMethod(requestPayload);
+        Object result = callTargetMethod(requestPayload);
         log.debug("通信【{}】在服务端完整方法调用",drpcRequest.getRequestId());
         // 3、封装响应
-
+        DrpcResponse drpcResponse = new DrpcResponse();
+        drpcResponse.setRequestId(drpcRequest.getRequestId());
+        drpcResponse.setCode(ResponseCode.SUCCESS.getCode());
+        drpcResponse.setSerializeType(drpcRequest.getSerializeType());
+        drpcResponse.setCompressType(drpcRequest.getCompressType());
+        drpcResponse.setBody(result);
         // 4、写出响应
-        ctx.channel().writeAndFlush(object);
+        ctx.channel().writeAndFlush(drpcResponse);
     }
 
     private Object callTargetMethod(RequestPayload requestPayload) {

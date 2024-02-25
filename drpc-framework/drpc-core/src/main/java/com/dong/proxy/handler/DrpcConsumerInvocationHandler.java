@@ -75,7 +75,7 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
         );
 
         // 获取响应结果
-        return objectCompletableFuture.get(3,TimeUnit.SECONDS);
+        return objectCompletableFuture.get(60,TimeUnit.SECONDS);
     }
 
     /**

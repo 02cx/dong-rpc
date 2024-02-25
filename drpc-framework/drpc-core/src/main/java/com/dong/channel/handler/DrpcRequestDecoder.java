@@ -91,7 +91,6 @@ public class DrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
             ObjectInputStream ois = new ObjectInputStream(bais)){
             RequestPayload requestPayload = (RequestPayload) ois.readObject();
             drpcRequest.setRequestPayload(requestPayload);
-            log.debug("解析的报文：{}",drpcRequest);
         } catch (IOException | ClassNotFoundException e) {
             log.error("请求【{}】的payload反序列化错误！！",requestId);
             throw new RuntimeException(e);

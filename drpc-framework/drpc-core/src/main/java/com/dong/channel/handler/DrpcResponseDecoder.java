@@ -42,10 +42,10 @@ public class DrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
             return decodeFrame(byteBuf);
         }
         return null;
-
     }
 
     private Object decodeFrame(ByteBuf byteBuf){
+      log.debug("-------------客户端收到响应，进行解码");
         // 魔数
         byte[] magic = new byte[MessageFormatConstant.MAGIC.length];
         byteBuf.readBytes(magic);
@@ -64,19 +64,16 @@ public class DrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         short headerLength = byteBuf.readShort();
         // 总长度
         int fullLength = byteBuf.readInt();
-        // 请求类型
-        byte requestType = byteBuf.readByte();
+        // 响应状态码
+        byte code = byteBuf.readByte();
         // 序列化类型
         byte serializeType = byteBuf.readByte();
         // 压缩类型
         byte compressType = byteBuf.readByte();
-        // 响应状态码
-        byte code = byteBuf.readByte();
         // 请求id
         long requestId = byteBuf.readLong();
         // 封装响应
         DrpcResponse drpcResponse = new DrpcResponse();
-        drpcResponse.setRequestType(requestType);
         drpcResponse.setSerializeType(serializeType);
         drpcResponse.setCompressType(compressType);
         drpcResponse.setCode(code);
@@ -95,7 +92,6 @@ public class DrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
             ObjectInputStream ois = new ObjectInputStream(bais)){
             Object obj = ois.readObject();
             drpcResponse.setBody(obj);
-            log.debug("解析的报文：{}",drpcResponse);
         } catch (IOException | ClassNotFoundException e) {
             log.error("请求【{}】的payload反序列化错误！！",requestId);
             throw new RuntimeException(e);

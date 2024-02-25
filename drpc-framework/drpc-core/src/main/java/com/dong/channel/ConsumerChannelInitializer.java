@@ -21,6 +21,7 @@ public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel
                 .addLast(new DrpcRequestEncoder())
                 // 入站
                 .addLast(new DrpcResponseDecoder())
+                // 处理结果
                 .addLast(new MySimpleChannelInboundHandler());
     }
 }

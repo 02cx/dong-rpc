@@ -30,18 +30,11 @@ public class DrpcResponseEncoder extends MessageToByteEncoder<DrpcResponse> {
         // 总长度
         byteBuf.writerIndex(byteBuf.writerIndex() + MessageFormatConstant.FULL_LENGTH_LENGTH);
         // 3个类型 3字节
-        byteBuf.writeByte(drpcResponse.getRequestType());
+        byteBuf.writeByte(drpcResponse.getCode());
         byteBuf.writeByte(drpcResponse.getSerializeType());
         byteBuf.writeByte(drpcResponse.getCompressType());
-        // 响应状态码
-        byteBuf.writerIndex(drpcResponse.getCode());
         // 请求id  8字节
         byteBuf.writeLong(drpcResponse.getRequestId());
-
-        // 心跳请求，不写入请求体
-/*        if(drpcRequest.getRequestType() == RequestType.HEAD_BEAT.getId()){
-            return;
-        }*/
 
         // 消息体
         byte[] body = objectToBytes(drpcResponse.getBody());
@@ -57,6 +50,7 @@ public class DrpcResponseEncoder extends MessageToByteEncoder<DrpcResponse> {
         byteBuf.writerIndex(writeIndex);
 
         log.debug("通信【{}】在服务端完整编码",drpcResponse.getRequestId());
+        log.debug("响应内容：{}",drpcResponse);
     }
 
 

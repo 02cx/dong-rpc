@@ -17,11 +17,10 @@ public class DrpcResponse {
     // 请求id
     private Long requestId;
 
-    private byte requestType; // 请求类型
-    private byte compressType; // 压缩类型
-    private byte serializeType; // 序列化方式
     // 响应码
     private byte code;
+    private byte compressType; // 压缩类型
+    private byte serializeType; // 序列化方式
 
     // 响应消息体
     private Object body;
