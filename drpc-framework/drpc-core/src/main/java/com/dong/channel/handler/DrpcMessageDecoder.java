@@ -1,5 +1,6 @@
 package com.dong.channel.handler;
 
+import com.dong.enumeration.RequestType;
 import com.dong.transport.message.DrpcRequest;
 import com.dong.transport.message.MessageFormatConstant;
 import com.dong.transport.message.RequestPayload;
@@ -70,14 +71,16 @@ public class DrpcMessageDecoder extends LengthFieldBasedFrameDecoder {
         byte compressType = byteBuf.readByte();
         // 请求id
         long requestId = byteBuf.readLong();
-
         // 封装请求
         DrpcRequest drpcRequest = new DrpcRequest();
         drpcRequest.setRequestType(requestType);
         drpcRequest.setSerializeType(serializeType);
         drpcRequest.setCompressType(compressType);
         drpcRequest.setRequestId(requestId);
-
+        // 如果时心跳检测请求，直接返回
+        if(requestId == RequestType.HEAD_BEAT.getId()){
+            return drpcRequest;
+        }
 
         // 消息体
         int payloadLength = fullLength - headerLength;

@@ -1,5 +1,6 @@
 package com.dong.channel.handler;
 
+import com.dong.enumeration.RequestType;
 import com.dong.transport.message.DrpcRequest;
 import com.dong.transport.message.MessageFormatConstant;
 import com.dong.transport.message.RequestPayload;
@@ -27,28 +28,38 @@ public class DrpcMessageEncoder extends MessageToByteEncoder<DrpcRequest> {
         // 头部长度 2字节
         byteBuf.writeShort(MessageFormatConstant.HEADER_LENGTH);
         // 总长度
-        byteBuf.writerIndex(byteBuf.writerIndex() + 4);
+        byteBuf.writerIndex(byteBuf.writerIndex() + MessageFormatConstant.FULL_LENGTH_LENGTH);
         // 3个类型 3字节
         byteBuf.writeByte(drpcRequest.getRequestType());
         byteBuf.writeByte(drpcRequest.getSerializeType());
         byteBuf.writeByte(drpcRequest.getCompressType());
         // 请求id  8字节
         byteBuf.writeLong(drpcRequest.getRequestId());
+
+        // 心跳请求，不写入请求体
+/*        if(drpcRequest.getRequestType() == RequestType.HEAD_BEAT.getId()){
+            return;
+        }*/
+
         // 消息体
         byte[] body = objectToBytes(drpcRequest.getRequestPayload());
         byteBuf.writeBytes(body);
+        int bodyLength = body == null ? 0 : body.length;
 
         // 记录写指针位置
         int writeIndex = byteBuf.writerIndex();
-        byteBuf.writerIndex(7);
-        byteBuf.writeInt(MessageFormatConstant.HEADER_LENGTH + body.length);
+        // 写指针移动到记录总长度Full_length处
+        byteBuf.writerIndex(MessageFormatConstant.MAGIC.length  +MessageFormatConstant.VERSION + MessageFormatConstant.HEADER_LENGTH_LENGTH);
+        byteBuf.writeInt(MessageFormatConstant.HEADER_LENGTH + bodyLength);
         // 恢复写指针
         byteBuf.writerIndex(writeIndex);
     }
 
 
     private byte[] objectToBytes(RequestPayload requestPayload) {
-
+        if(requestPayload == null){
+            return null;
+        }
         // 序列化
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();ObjectOutputStream oos = new ObjectOutputStream(baos);) {
             oos.writeObject(requestPayload);

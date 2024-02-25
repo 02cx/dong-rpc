@@ -3,6 +3,7 @@ package com.dong.proxy.handler;
 import com.dong.DrpcBootstrap;
 import com.dong.NettyBootstrapInitializer;
 import com.dong.discovery.Register;
+import com.dong.enumeration.RequestType;
 import com.dong.exceptions.NetworkException;
 import com.dong.transport.message.DrpcRequest;
 import com.dong.transport.message.RequestPayload;
@@ -59,7 +60,7 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
                 .requestId(1L)
                 .compressType((byte) 1)
                 .serializeType((byte) 1)
-                .requestType((byte) 1)
+                .requestType((RequestType.REQUEST.getId()))
                 .requestPayload(payload).build();
 
         // 发送消息，异步监听
