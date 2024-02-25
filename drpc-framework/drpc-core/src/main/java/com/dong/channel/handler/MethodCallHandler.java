@@ -20,6 +20,7 @@ public class MethodCallHandler  extends SimpleChannelInboundHandler<DrpcRequest>
         RequestPayload requestPayload = drpcRequest.getRequestPayload();
         // 2、根据负载内容进行方法调用
         Object object = callTargetMethod(requestPayload);
+        log.debug("通信【{}】在服务端完整方法调用",drpcRequest.getRequestId());
         // 3、封装响应
 
         // 4、写出响应

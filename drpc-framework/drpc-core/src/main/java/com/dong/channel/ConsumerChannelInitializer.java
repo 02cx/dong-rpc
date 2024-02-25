@@ -1,6 +1,7 @@
 package com.dong.channel;
 
-import com.dong.channel.handler.DrpcMessageEncoder;
+import com.dong.channel.handler.DrpcRequestEncoder;
+import com.dong.channel.handler.DrpcResponseDecoder;
 import com.dong.channel.handler.MySimpleChannelInboundHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -17,7 +18,9 @@ public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel
                 // netty自带的日志处理器
                 .addLast(new LoggingHandler(LogLevel.DEBUG))
                 // 消息编码器
-                .addLast(new DrpcMessageEncoder())
+                .addLast(new DrpcRequestEncoder())
+                // 入站
+                .addLast(new DrpcResponseDecoder())
                 .addLast(new MySimpleChannelInboundHandler());
     }
 }

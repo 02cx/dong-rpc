@@ -2,6 +2,7 @@ package com.dong.channel.handler;
 
 import com.dong.enumeration.RequestType;
 import com.dong.transport.message.DrpcRequest;
+import com.dong.transport.message.DrpcResponse;
 import com.dong.transport.message.MessageFormatConstant;
 import com.dong.transport.message.RequestPayload;
 import io.netty.buffer.ByteBuf;
@@ -17,9 +18,9 @@ import java.io.ObjectInputStream;
  * 基于字段长度的帧解析器
  */
 @Slf4j
-public class DrpcMessageDecoder extends LengthFieldBasedFrameDecoder {
+public class DrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
 
-    public DrpcMessageDecoder() {
+    public DrpcResponseDecoder() {
         // 找到当前报文的总长度，截取报文，进行解析
         super(
                 // 最大帧的长度，超过maxFrameLength就会直接丢弃
@@ -69,33 +70,37 @@ public class DrpcMessageDecoder extends LengthFieldBasedFrameDecoder {
         byte serializeType = byteBuf.readByte();
         // 压缩类型
         byte compressType = byteBuf.readByte();
+        // 响应状态码
+        byte code = byteBuf.readByte();
         // 请求id
         long requestId = byteBuf.readLong();
-        // 封装请求
-        DrpcRequest drpcRequest = new DrpcRequest();
-        drpcRequest.setRequestType(requestType);
-        drpcRequest.setSerializeType(serializeType);
-        drpcRequest.setCompressType(compressType);
-        drpcRequest.setRequestId(requestId);
+        // 封装响应
+        DrpcResponse drpcResponse = new DrpcResponse();
+        drpcResponse.setRequestType(requestType);
+        drpcResponse.setSerializeType(serializeType);
+        drpcResponse.setCompressType(compressType);
+        drpcResponse.setCode(code);
+        drpcResponse.setRequestId(requestId);
         // 如果时心跳检测请求，直接返回
         if(requestId == RequestType.HEAD_BEAT.getId()){
-            return drpcRequest;
+            return drpcResponse;
         }
 
         // 消息体
-        int payloadLength = fullLength - headerLength;
-        byte[] payload = new byte[payloadLength];
-        byteBuf.readBytes(payload);
+        int bodyLength = fullLength - headerLength;
+        byte[] body = new byte[bodyLength];
+        byteBuf.readBytes(body);
         // 反序列化
-        try(ByteArrayInputStream bais = new ByteArrayInputStream(payload);
+        try(ByteArrayInputStream bais = new ByteArrayInputStream(body);
             ObjectInputStream ois = new ObjectInputStream(bais)){
-            RequestPayload requestPayload = (RequestPayload) ois.readObject();
-            drpcRequest.setRequestPayload(requestPayload);
-            log.debug("解析的报文：{}",drpcRequest);
+            Object obj = ois.readObject();
+            drpcResponse.setBody(obj);
+            log.debug("解析的报文：{}",drpcResponse);
         } catch (IOException | ClassNotFoundException e) {
             log.error("请求【{}】的payload反序列化错误！！",requestId);
             throw new RuntimeException(e);
         }
-        return drpcRequest;
+        log.debug("通信【{}】在客户端完整解码",drpcResponse.getRequestId());
+        return drpcResponse;
     }
 }
