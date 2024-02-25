@@ -1,9 +1,5 @@
 package com.dong;
 
-
-
-
-
 import com.dong.channel.handler.DrpcRequestDecoder;
 import com.dong.channel.handler.DrpcRequestEncoder;
 import com.dong.channel.handler.DrpcResponseEncoder;
@@ -18,6 +14,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.zookeeper.data.Id;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -39,6 +36,7 @@ public class DrpcBootstrap {
     private RegisterConfig registerConfig;
     private ProtocolConfig protocolConfig;
     private int port = 8088;
+    public static final IdGenerator ID_GENERATOR = new IdGenerator(1L,2L);
 
     // 注册中心
     private Register register;

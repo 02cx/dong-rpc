@@ -57,7 +57,7 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
                 .parametersValue(args).build();
 
         DrpcRequest drpcRequest = DrpcRequest.builder()
-                .requestId(1L)
+                .requestId(DrpcBootstrap.ID_GENERATOR.getId())
                 .compressType((byte) 1)
                 .serializeType((byte) 1)
                 .requestType((RequestType.REQUEST.getId()))
