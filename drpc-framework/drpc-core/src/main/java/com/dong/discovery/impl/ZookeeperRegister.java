@@ -1,6 +1,7 @@
 package com.dong.discovery.impl;
 
 import com.dong.Constant;
+import com.dong.DrpcBootstrap;
 import com.dong.ServiceConfig;
 import com.dong.discovery.AbstractRegistry;
 import com.dong.exceptions.NetworkException;
@@ -40,7 +41,7 @@ public class ZookeeperRegister extends AbstractRegistry {
 
         // 创建本机临时节点，  ip:port
         //WYD TODO 2024-02-22: 后续处理全局端口问题
-        String node = parentNode + "/" + NetUtils.getIpAddress() + ":" + 8088;
+        String node = parentNode + "/" + NetUtils.getIpAddress() + ":" + DrpcBootstrap.port;
         if(!ZookeeperUtils.exists(zooKeeper,node,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(node, null);
             ZookeeperUtils.createNode(zooKeeper, zookeeperNode, null, CreateMode.EPHEMERAL);

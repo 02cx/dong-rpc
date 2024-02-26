@@ -1,8 +1,11 @@
-package com.dong.loadbalance;
+package com.dong.loadbalance.impl;
 
 import com.dong.DrpcBootstrap;
 import com.dong.discovery.Register;
 import com.dong.exceptions.LoadBalanceException;
+import com.dong.loadbalance.AbstractLoadBalance;
+import com.dong.loadbalance.LoadBalance;
+import com.dong.loadbalance.Selector;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -14,33 +17,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  轮询的负载均衡
  */
 @Slf4j
-public class RoundRobinLoadBalance implements LoadBalance{
-
-    private Register register;
-
-    // 一个服务匹配一个selector
-    private ConcurrentHashMap<String,Selector> cache = new ConcurrentHashMap<>(8);
-
-    public RoundRobinLoadBalance() {
-        register = DrpcBootstrap.getInstance().getRegister();
-    }
+public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
     @Override
-    public InetSocketAddress selectServiceAddress(String serviceName) {
-        // 从cache中拿到一个selector
-        Selector selector = cache.get(serviceName);
-        // cache中没拿到，就新建selector
-        if(selector == null){
-            // 从注册中心拉取服务列表
-            List<InetSocketAddress> serviceList = register.lookup(serviceName, null);
-            // 根据服务列表获取selector
-            selector = new RoundRobinSelector(serviceList);
-            cache.put(serviceName,selector);
-        }
-
-        return selector.getNext();
+    protected Selector getSelector(List<InetSocketAddress> serviceList) {
+        return new RoundRobinSelector(serviceList);
     }
-
 
     private static class RoundRobinSelector implements Selector{
 
@@ -63,9 +45,11 @@ public class RoundRobinLoadBalance implements LoadBalance{
             // 游标指到最后一位，重置
             if(index.get() == serviceList.size() - 1){
                 index.set(0);
+            }else{
+                // 游标向后移动一位
+                index.incrementAndGet();
             }
-            // 游标向后移动一位
-            index.incrementAndGet();
+
 
             return inetSocketAddress;
         }

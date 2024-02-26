@@ -43,9 +43,8 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
         // 1.拉取服务  服务名   返回ip+端口
         InetSocketAddress inetSocketAddress = DrpcBootstrap.LOAD_BALANCE.selectServiceAddress(interfaceRef.getName());
 
-        List<InetSocketAddress> lookup = register.lookup(interfaceRef.getName(), "");
         if (log.isDebugEnabled()) {
-            log.debug("服务调用方从注册中心拉取了服务【{}】", lookup);
+            log.debug("服务调用方从注册中心拉取了服务【{}】", inetSocketAddress);
         }
         // 2.用netty连接服务器，发送调用的  服务名+方法名+参数列表，得到结果
         //获取通道
