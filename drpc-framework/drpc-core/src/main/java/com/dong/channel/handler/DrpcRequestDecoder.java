@@ -1,6 +1,9 @@
 package com.dong.channel.handler;
 
 import com.dong.enumeration.RequestType;
+import com.dong.serialize.SerializerFactory;
+import com.dong.serialize.impl.JdkSerializer;
+import com.dong.serialize.Serializer;
 import com.dong.transport.message.DrpcRequest;
 import com.dong.transport.message.MessageFormatConstant;
 import com.dong.transport.message.RequestPayload;
@@ -8,10 +11,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 
 /**
  * 基于字段长度的帧解析器
@@ -87,14 +86,10 @@ public class DrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         byte[] payload = new byte[payloadLength];
         byteBuf.readBytes(payload);
         // 反序列化
-        try(ByteArrayInputStream bais = new ByteArrayInputStream(payload);
-            ObjectInputStream ois = new ObjectInputStream(bais)){
-            RequestPayload requestPayload = (RequestPayload) ois.readObject();
-            drpcRequest.setRequestPayload(requestPayload);
-        } catch (IOException | ClassNotFoundException e) {
-            log.error("请求【{}】的payload反序列化错误！！",requestId);
-            throw new RuntimeException(e);
-        }
+        Serializer serializer = SerializerFactory.getSerializer(serializeType).getSerializer();
+        RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
+        drpcRequest.setRequestPayload(requestPayload);
+
         log.debug("通信【{}】在服务端完整解码",drpcRequest.getRequestId());
         return drpcRequest;
     }

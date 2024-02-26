@@ -5,6 +5,7 @@ import com.dong.NettyBootstrapInitializer;
 import com.dong.discovery.Register;
 import com.dong.enumeration.RequestType;
 import com.dong.exceptions.NetworkException;
+import com.dong.serialize.SerializerFactory;
 import com.dong.transport.message.DrpcRequest;
 import com.dong.transport.message.RequestPayload;
 import io.netty.buffer.Unpooled;
@@ -59,7 +60,7 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
         DrpcRequest drpcRequest = DrpcRequest.builder()
                 .requestId(DrpcBootstrap.ID_GENERATOR.getId())
                 .compressType((byte) 1)
-                .serializeType((byte) 1)
+                .serializeType(SerializerFactory.getSerializer(DrpcBootstrap.SERIALIZE_TYPE).getCode())
                 .requestType((RequestType.REQUEST.getId()))
                 .requestPayload(payload).build();
 

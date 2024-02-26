@@ -26,6 +26,7 @@ public class ConsumerApplication {
         DrpcBootstrap.getInstance()
                 .application("first-drpc-consumer")   // 应用名称
                 .register(new RegisterConfig("zookeeper://192.168.183.130:2181"))  // 注册中心
+                .serialize("jdk")
                 .reference(reference);
 
         // 获取代理对象

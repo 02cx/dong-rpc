@@ -37,6 +37,7 @@ public class DrpcBootstrap {
     private ProtocolConfig protocolConfig;
     private int port = 8088;
     public static final IdGenerator ID_GENERATOR = new IdGenerator(1L,2L);
+    public static String SERIALIZE_TYPE = "jdk";
 
     // 注册中心
     private Register register;
@@ -181,4 +182,8 @@ public class DrpcBootstrap {
     }
 
 
+    public DrpcBootstrap serialize(String serializeType) {
+        SERIALIZE_TYPE = serializeType;
+        return this;
+    }
 }

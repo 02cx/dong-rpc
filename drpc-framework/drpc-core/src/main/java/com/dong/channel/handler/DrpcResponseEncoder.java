@@ -1,5 +1,7 @@
 package com.dong.channel.handler;
 
+import com.dong.serialize.Serializer;
+import com.dong.serialize.SerializerFactory;
 import com.dong.transport.message.DrpcRequest;
 import com.dong.transport.message.DrpcResponse;
 import com.dong.transport.message.MessageFormatConstant;
@@ -9,6 +11,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.security.sasl.SaslServerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -37,7 +40,10 @@ public class DrpcResponseEncoder extends MessageToByteEncoder<DrpcResponse> {
         byteBuf.writeLong(drpcResponse.getRequestId());
 
         // 消息体
-        byte[] body = objectToBytes(drpcResponse.getBody());
+
+        // 序列化
+        Serializer serializer = SerializerFactory.getSerializer(drpcResponse.getSerializeType()).getSerializer();
+        byte[] body = serializer.serialize(drpcResponse.getBody());
         byteBuf.writeBytes(body);
         int bodyLength = body == null ? 0 : body.length;
 
@@ -54,18 +60,4 @@ public class DrpcResponseEncoder extends MessageToByteEncoder<DrpcResponse> {
     }
 
 
-    private byte[] objectToBytes(Object responseBody) {
-        if(responseBody == null){
-            return null;
-        }
-        // 序列化
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();ObjectOutputStream oos = new ObjectOutputStream(baos);) {
-            oos.writeObject(responseBody);
-            byte[] bytes = baos.toByteArray();
-            return bytes;
-        } catch (IOException e) {
-            log.error("消息序列化失败");
-            throw new RuntimeException(e);
-        }
-    }
 }

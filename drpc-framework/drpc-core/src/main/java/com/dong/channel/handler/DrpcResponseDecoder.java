@@ -1,6 +1,8 @@
 package com.dong.channel.handler;
 
 import com.dong.enumeration.RequestType;
+import com.dong.serialize.Serializer;
+import com.dong.serialize.SerializerFactory;
 import com.dong.transport.message.DrpcRequest;
 import com.dong.transport.message.DrpcResponse;
 import com.dong.transport.message.MessageFormatConstant;
@@ -88,14 +90,10 @@ public class DrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         byte[] body = new byte[bodyLength];
         byteBuf.readBytes(body);
         // 反序列化
-        try(ByteArrayInputStream bais = new ByteArrayInputStream(body);
-            ObjectInputStream ois = new ObjectInputStream(bais)){
-            Object obj = ois.readObject();
-            drpcResponse.setBody(obj);
-        } catch (IOException | ClassNotFoundException e) {
-            log.error("请求【{}】的payload反序列化错误！！",requestId);
-            throw new RuntimeException(e);
-        }
+        Serializer serializer = SerializerFactory.getSerializer(serializeType).getSerializer();
+        Object object = serializer.deserialize(body, Object.class);
+        drpcResponse.setBody(object);
+
         log.debug("通信【{}】在客户端完整解码",drpcResponse.getRequestId());
         return drpcResponse;
     }
