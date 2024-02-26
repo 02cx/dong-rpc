@@ -1,5 +1,7 @@
 package com.dong.channel.handler;
 
+import com.dong.compress.Compressor;
+import com.dong.compress.CompressorFactory;
 import com.dong.serialize.SerializerFactory;
 import com.dong.serialize.impl.JdkSerializer;
 import com.dong.serialize.Serializer;
@@ -42,10 +44,15 @@ public class DrpcRequestEncoder extends MessageToByteEncoder<DrpcRequest> {
 
         // 序列化
         Serializer serializer = SerializerFactory.getSerializer(drpcRequest.getSerializeType()).getSerializer();
-        byte[] body = serializer.serialize(drpcRequest.getRequestPayload());
+        byte[] bodySerializer = serializer.serialize(drpcRequest.getRequestPayload());
+
+        // 压缩
+        Compressor compressor = CompressorFactory.getCompressor(drpcRequest.getCompressType()).getCompressor();
+        byte[] body = compressor.compress(bodySerializer);
+
+
         byteBuf.writeBytes(body);
         int bodyLength = body == null ? 0 : body.length;
-
         // 记录写指针位置
         int writeIndex = byteBuf.writerIndex();
         // 写指针移动到记录总长度Full_length处

@@ -1,11 +1,13 @@
 package com.dong.serialize;
 
+import com.dong.compress.CompressorWrapper;
 import com.dong.serialize.impl.HessianSerializer;
 import com.dong.serialize.impl.JdkSerializer;
 import com.dong.serialize.impl.JsonSerializer;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
-
+@Slf4j
 public class SerializerFactory {
 
     private static ConcurrentHashMap<String,SerializerWrapper> SERIALIZER_CACHE = new ConcurrentHashMap<>();
@@ -26,11 +28,26 @@ public class SerializerFactory {
     }
 
 
+    /**
+     *  使用工厂获取一个SerializerWrapper
+     * @param serializerType
+     * @return
+     */
     public static SerializerWrapper getSerializer(String serializerType){
-        return SERIALIZER_CACHE.get(serializerType);
+        SerializerWrapper serializerWrapper = SERIALIZER_CACHE.get(serializerType);
+        if(serializerWrapper == null){
+            log.error("未找到您配置的【{}】序列化方式，默认选择jdk的序列化方式",serializerType);
+            return SERIALIZER_CACHE.get("jdk");
+        }
+        return serializerWrapper;
     }
 
     public static SerializerWrapper getSerializer(byte serializerType){
-        return SERIALIZER_CACHE_Code.get(serializerType);
+        SerializerWrapper serializerWrapper = SERIALIZER_CACHE_Code.get(serializerType);
+        if(serializerWrapper == null){
+            log.error("未找到您配置的【{}】反序列化方式，默认选择jdk的反序列化方式",serializerWrapper.getSerializer());
+            return SERIALIZER_CACHE_Code.get("jdk");
+        }
+        return serializerWrapper;
     }
 }

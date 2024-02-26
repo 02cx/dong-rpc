@@ -1,5 +1,7 @@
 package com.dong.channel.handler;
 
+import com.dong.compress.Compressor;
+import com.dong.compress.CompressorFactory;
 import com.dong.serialize.Serializer;
 import com.dong.serialize.SerializerFactory;
 import com.dong.transport.message.DrpcRequest;
@@ -43,7 +45,12 @@ public class DrpcResponseEncoder extends MessageToByteEncoder<DrpcResponse> {
 
         // 序列化
         Serializer serializer = SerializerFactory.getSerializer(drpcResponse.getSerializeType()).getSerializer();
-        byte[] body = serializer.serialize(drpcResponse.getBody());
+        byte[] bodySerializer = serializer.serialize(drpcResponse.getBody());
+
+        // 压缩
+        Compressor compressor = CompressorFactory.getCompressor(drpcResponse.getCompressType()).getCompressor();
+        byte[] body = compressor.compress(bodySerializer);
+
         byteBuf.writeBytes(body);
         int bodyLength = body == null ? 0 : body.length;
 

@@ -1,5 +1,7 @@
 package com.dong.channel.handler;
 
+import com.dong.compress.Compressor;
+import com.dong.compress.CompressorFactory;
 import com.dong.enumeration.RequestType;
 import com.dong.serialize.SerializerFactory;
 import com.dong.serialize.impl.JdkSerializer;
@@ -85,9 +87,12 @@ public class DrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         int payloadLength = fullLength - headerLength;
         byte[] payload = new byte[payloadLength];
         byteBuf.readBytes(payload);
+        // 解压缩
+        Compressor compressor = CompressorFactory.getCompressor(compressType).getCompressor();
+        byte[] decompress = compressor.decompress(payload);
         // 反序列化
         Serializer serializer = SerializerFactory.getSerializer(serializeType).getSerializer();
-        RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
+        RequestPayload requestPayload = serializer.deserialize(decompress, RequestPayload.class);
         drpcRequest.setRequestPayload(requestPayload);
 
         log.debug("通信【{}】在服务端完整解码",drpcRequest.getRequestId());

@@ -34,6 +34,7 @@ public class HessianSerializer implements Serializer {
         try(ByteArrayInputStream bais = new ByteArrayInputStream(data)){
             HessianInput input = new HessianInput(bais);
             Object object = input.readObject();
+            log.debug("类【{}】反序列化完成",clazz);
             return (T)object;
         } catch (Exception e) {
             log.error("请求【{}】的payload反序列化错误！！",data);

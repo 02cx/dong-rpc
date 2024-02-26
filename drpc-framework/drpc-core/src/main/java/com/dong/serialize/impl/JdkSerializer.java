@@ -30,6 +30,7 @@ public class JdkSerializer implements Serializer {
         try(ByteArrayInputStream bais = new ByteArrayInputStream(data);
             ObjectInputStream ois = new ObjectInputStream(bais)){
             Object object = ois.readObject();
+            log.debug("类【{}】反序列化完成",clazz);
             return (T)object;
         } catch (IOException | ClassNotFoundException e) {
             log.error("请求【{}】的payload反序列化错误！！",data);

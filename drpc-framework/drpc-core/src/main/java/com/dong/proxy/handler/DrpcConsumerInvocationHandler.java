@@ -2,6 +2,7 @@ package com.dong.proxy.handler;
 
 import com.dong.DrpcBootstrap;
 import com.dong.NettyBootstrapInitializer;
+import com.dong.compress.CompressorFactory;
 import com.dong.discovery.Register;
 import com.dong.enumeration.RequestType;
 import com.dong.exceptions.NetworkException;
@@ -59,7 +60,7 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
 
         DrpcRequest drpcRequest = DrpcRequest.builder()
                 .requestId(DrpcBootstrap.ID_GENERATOR.getId())
-                .compressType((byte) 1)
+                .compressType(CompressorFactory.getCompressor(DrpcBootstrap.COMPRESSOR_TYPE).getCode())
                 .serializeType(SerializerFactory.getSerializer(DrpcBootstrap.SERIALIZE_TYPE).getCode())
                 .requestType((RequestType.REQUEST.getId()))
                 .requestPayload(payload).build();
