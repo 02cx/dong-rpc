@@ -40,13 +40,13 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        // 拉取服务  服务名   返回ip+端口
+        // 1.拉取服务  服务名   返回ip+端口
+        InetSocketAddress inetSocketAddress = DrpcBootstrap.LOAD_BALANCE.selectServiceAddress(interfaceRef.getName());
+
         List<InetSocketAddress> lookup = register.lookup(interfaceRef.getName(), "");
         if (log.isDebugEnabled()) {
             log.debug("服务调用方从注册中心拉取了服务【{}】", lookup);
         }
-        //WYD TODO 2024-02-23:当前只有一个服务
-        InetSocketAddress inetSocketAddress = lookup.get(0);
         // 2.用netty连接服务器，发送调用的  服务名+方法名+参数列表，得到结果
         //获取通道
         Channel channel = getAvailableChannel(inetSocketAddress);

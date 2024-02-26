@@ -1,11 +1,12 @@
 package com.dong;
 
 import com.dong.channel.handler.DrpcRequestDecoder;
-import com.dong.channel.handler.DrpcRequestEncoder;
 import com.dong.channel.handler.DrpcResponseEncoder;
 import com.dong.channel.handler.MethodCallHandler;
 import com.dong.discovery.Register;
 import com.dong.discovery.RegisterConfig;
+import com.dong.loadbalance.LoadBalance;
+import com.dong.loadbalance.RoundRobinLoadBalance;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,7 +15,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.zookeeper.data.Id;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -42,6 +42,8 @@ public class DrpcBootstrap {
 
     // 注册中心
     private Register register;
+
+    public static  LoadBalance LOAD_BALANCE;
 
     // 缓存channel连接
     public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE  = new ConcurrentHashMap<>(16);
@@ -85,6 +87,8 @@ public class DrpcBootstrap {
     public DrpcBootstrap register(RegisterConfig registerConfig) {
         // 类似工厂方法模式
         this.register = registerConfig.getRegister();
+        //WYD TODO 2024-02-26: 需要修改
+        LOAD_BALANCE = new RoundRobinLoadBalance();
         return this;
     }
 
@@ -191,5 +195,9 @@ public class DrpcBootstrap {
     public DrpcBootstrap compress(String compressType) {
         COMPRESSOR_TYPE = compressType;
         return this;
+    }
+
+    public Register getRegister() {
+        return register;
     }
 }
