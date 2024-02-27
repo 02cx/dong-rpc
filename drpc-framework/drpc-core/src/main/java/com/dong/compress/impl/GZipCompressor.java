@@ -22,7 +22,7 @@ public class GZipCompressor implements Compressor {
             gzipOutputStream.finish();
             byte[] result = baos.toByteArray();
 
-            log.debug("数据【{}】压缩完成，长度【{}】----->【{}】",data,data.length,result.length);
+            log.debug("数据压缩完成，长度【{}】----->【{}】",data.length,result.length);
 
             return result;
         } catch (IOException e) {
@@ -36,7 +36,7 @@ public class GZipCompressor implements Compressor {
         try(ByteArrayInputStream bais = new ByteArrayInputStream(data); GZIPInputStream gzipInputStream = new GZIPInputStream(bais)){
             byte[] result = gzipInputStream.readAllBytes();
 
-            log.debug("数据【{}】解压缩完成，长度【{}】----->【{}】",data,data.length,result.length);
+            log.debug("数据解压缩完成，长度【{}】----->【{}】",data.length,result.length);
 
             return result;
         } catch (IOException e) {

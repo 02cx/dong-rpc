@@ -40,16 +40,6 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        // 1.拉取服务  服务名   返回ip+端口
-        InetSocketAddress inetSocketAddress = DrpcBootstrap.LOAD_BALANCE.selectServiceAddress(interfaceRef.getName());
-
-        if (log.isDebugEnabled()) {
-            log.debug("服务调用方从注册中心拉取了服务【{}】", inetSocketAddress);
-        }
-        // 2.用netty连接服务器，发送调用的  服务名+方法名+参数列表，得到结果
-        //获取通道
-        Channel channel = getAvailableChannel(inetSocketAddress);
-
         // 封装报文
         RequestPayload payload = RequestPayload.builder()
                 .interfaceName(interfaceRef.getName())
@@ -64,6 +54,19 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
                 .requestType((RequestType.REQUEST.getId()))
                 .requestPayload(payload).build();
 
+        // 将请求存入本地线程
+        DrpcBootstrap.REQUEST_THREAD_LOCAL.set(drpcRequest);
+
+        // 1.拉取服务  服务名   返回ip+端口
+        InetSocketAddress inetSocketAddress = DrpcBootstrap.LOAD_BALANCE.selectServiceAddress(interfaceRef.getName());
+
+        if (log.isDebugEnabled()) {
+            log.debug("服务调用方从注册中心拉取了服务【{}】", inetSocketAddress);
+        }
+        // 2.用netty连接服务器，发送调用的  服务名+方法名+参数列表，得到结果
+        //获取通道
+        Channel channel = getAvailableChannel(inetSocketAddress);
+
         // 发送消息，异步监听
         CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
         DrpcBootstrap.PENDING_REQUEST.put(1L,objectCompletableFuture);
@@ -74,6 +77,8 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
                     }
                 }
         );
+
+        DrpcBootstrap.REQUEST_THREAD_LOCAL.remove();
 
         // 获取响应结果
         return objectCompletableFuture.get(60,TimeUnit.SECONDS);
