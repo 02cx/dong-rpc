@@ -93,6 +93,11 @@ public class HeartbeatDetection {
 
                 log.debug("和【{}】服务器的响应时间是----->【{}】",entry.getKey(),time);
             }
+
+            log.info("--------------响应时间的TreeMap----------------");
+            for(Map.Entry<Long, Channel> entry : DrpcBootstrap.ANSWER_TIME_CHANNEL_CACHE.entrySet()){
+                log.debug("[{}]----------->[{}]",entry.getKey(),entry.getValue().id());
+            }
         }
     }
 }

@@ -101,7 +101,7 @@ public class DrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
             drpcResponse.setBody(object);
         }
 
-        log.debug("通信【{}】在客户端完整解码",drpcResponse.getRequestId());
+        log.debug("通信【{}】在客户端完成解码",drpcResponse.getRequestId());
         return drpcResponse;
     }
 }

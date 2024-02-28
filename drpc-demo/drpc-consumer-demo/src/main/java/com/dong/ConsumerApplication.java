@@ -36,21 +36,13 @@ public class ConsumerApplication {
         // 获取代理对象
         HelloDrpc helloDrpc = reference.get();
 
-        String result = helloDrpc.sayHi("hi drpc");
-        log.info("服务消费者接收到的消息：{}",result);
+/*        String result = helloDrpc.sayHi("hi drpc");
+        log.info("服务消费者接收到的消息：{}",result);*/
 
-        /*for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 50; i++) {
             String result = helloDrpc.sayHi("hi drpc");
             log.info("服务消费者接收到的消息：{}",result);
-        }*/
-
-        log.debug("开始进行心跳检测");
-        /*for(Map.Entry<String ,ServiceConfig<?>> entry : DrpcBootstrap.SERVER_LIST.entrySet()){
-            HeartbeatDetection.detectHeartbeat(entry.getKey());
-        }*/
-
-        HeartbeatDetection.detectHeartbeat(HelloDrpc.class.getName());
-
+        }
 
     }
 }

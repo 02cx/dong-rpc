@@ -38,7 +38,7 @@ public class DrpcBootstrap {
     private String applicationName;
     private RegisterConfig registerConfig;
     private ProtocolConfig protocolConfig;
-    public static int port = 8090;
+    public static int port = 8093;
     public static final IdGenerator ID_GENERATOR = new IdGenerator(1L,2L);
     public static String SERIALIZE_TYPE = "jdk";
     public static String COMPRESSOR_TYPE = "gzip";
@@ -57,7 +57,7 @@ public class DrpcBootstrap {
     // 定义全局的completableFuture
     public static final Map<Long, CompletableFuture<Object>> PENDING_REQUEST = new ConcurrentHashMap<>(16);
 
-    public static final Map<Long, Channel> ANSWER_TIME_CHANNEL_CACHE = new TreeMap<>();
+    public static final TreeMap<Long, Channel> ANSWER_TIME_CHANNEL_CACHE = new TreeMap<>();
 
     public static final ThreadLocal<DrpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
 
@@ -94,7 +94,7 @@ public class DrpcBootstrap {
     public DrpcBootstrap register(RegisterConfig registerConfig) {
         // 类似工厂方法模式
         this.register = registerConfig.getRegister();
-        //WYD TODO 2024-02-26: 需要修改
+        //WYD TODO 2024-02-26: 需要修改负载均衡策略
         LOAD_BALANCE = new ConsistentHashLoadBalance();
         return this;
     }
