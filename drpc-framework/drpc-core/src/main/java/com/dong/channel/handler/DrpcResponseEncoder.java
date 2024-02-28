@@ -42,16 +42,20 @@ public class DrpcResponseEncoder extends MessageToByteEncoder<DrpcResponse> {
         byteBuf.writeLong(drpcResponse.getRequestId());
 
         // 消息体
+        byte[] body = null;
+        if(drpcResponse.getBody() != null){
+            // 序列化
+            Serializer serializer = SerializerFactory.getSerializer(drpcResponse.getSerializeType()).getSerializer();
+            body = serializer.serialize(drpcResponse.getBody());
 
-        // 序列化
-        Serializer serializer = SerializerFactory.getSerializer(drpcResponse.getSerializeType()).getSerializer();
-        byte[] bodySerializer = serializer.serialize(drpcResponse.getBody());
+            // 压缩
+            Compressor compressor = CompressorFactory.getCompressor(drpcResponse.getCompressType()).getCompressor();
+            body = compressor.compress(body);
+        }
+        if(body != null ){
+            byteBuf.writeBytes(body);
+        }
 
-        // 压缩
-        Compressor compressor = CompressorFactory.getCompressor(drpcResponse.getCompressType()).getCompressor();
-        byte[] body = compressor.compress(bodySerializer);
-
-        byteBuf.writeBytes(body);
         int bodyLength = body == null ? 0 : body.length;
 
         // 记录写指针位置

@@ -82,18 +82,20 @@ public class DrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         if(requestId == RequestType.HEAD_BEAT.getId()){
             return drpcRequest;
         }
-
-        // 消息体
         int payloadLength = fullLength - headerLength;
-        byte[] payload = new byte[payloadLength];
-        byteBuf.readBytes(payload);
-        // 解压缩
-        Compressor compressor = CompressorFactory.getCompressor(compressType).getCompressor();
-        byte[] decompress = compressor.decompress(payload);
-        // 反序列化
-        Serializer serializer = SerializerFactory.getSerializer(serializeType).getSerializer();
-        RequestPayload requestPayload = serializer.deserialize(decompress, RequestPayload.class);
-        drpcRequest.setRequestPayload(requestPayload);
+        byte[] payload = null;
+        if(payloadLength != 0){
+            // 消息体
+            payload = new byte[payloadLength];
+            byteBuf.readBytes(payload);
+            // 解压缩
+            Compressor compressor = CompressorFactory.getCompressor(compressType).getCompressor();
+            payload = compressor.decompress(payload);
+            // 反序列化
+            Serializer serializer = SerializerFactory.getSerializer(serializeType).getSerializer();
+            RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
+            drpcRequest.setRequestPayload(requestPayload);
+        }
 
         log.debug("通信【{}】在服务端完整解码",drpcRequest.getRequestId());
         return drpcRequest;

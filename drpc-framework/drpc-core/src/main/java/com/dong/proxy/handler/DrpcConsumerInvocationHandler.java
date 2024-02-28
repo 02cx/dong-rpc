@@ -69,8 +69,8 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
 
         // 发送消息，异步监听
         CompletableFuture<Object> objectCompletableFuture = new CompletableFuture<>();
-        DrpcBootstrap.PENDING_REQUEST.put(1L,objectCompletableFuture);
-        ChannelFuture channelFuture = channel.writeAndFlush(drpcRequest).addListener(
+        DrpcBootstrap.PENDING_REQUEST.put(drpcRequest.getRequestId(),objectCompletableFuture);
+        channel.writeAndFlush(drpcRequest).addListener(
                 (ChannelFutureListener) promise -> {
                     if(!promise.isSuccess()){
                         objectCompletableFuture.completeExceptionally(promise.cause());
@@ -81,7 +81,7 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
         DrpcBootstrap.REQUEST_THREAD_LOCAL.remove();
 
         // 获取响应结果
-        return objectCompletableFuture.get(60,TimeUnit.SECONDS);
+        return objectCompletableFuture.get(10,TimeUnit.SECONDS);
     }
 
     /**

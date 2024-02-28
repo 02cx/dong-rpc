@@ -7,6 +7,7 @@ import com.dong.serialize.impl.JdkSerializer;
 import com.dong.serialize.Serializer;
 import com.dong.transport.message.DrpcRequest;
 import com.dong.transport.message.MessageFormatConstant;
+import com.dong.transport.message.RequestPayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -41,17 +42,19 @@ public class DrpcRequestEncoder extends MessageToByteEncoder<DrpcRequest> {
         }*/
 
         // 消息体
-
-        // 序列化
-        Serializer serializer = SerializerFactory.getSerializer(drpcRequest.getSerializeType()).getSerializer();
-        byte[] bodySerializer = serializer.serialize(drpcRequest.getRequestPayload());
-
-        // 压缩
-        Compressor compressor = CompressorFactory.getCompressor(drpcRequest.getCompressType()).getCompressor();
-        byte[] body = compressor.compress(bodySerializer);
-
-
-        byteBuf.writeBytes(body);
+        byte[] body = null;
+        RequestPayload requestPayload = drpcRequest.getRequestPayload();
+        if(requestPayload != null){
+            // 序列化
+            Serializer serializer = SerializerFactory.getSerializer(drpcRequest.getSerializeType()).getSerializer();
+            body = serializer.serialize(drpcRequest.getRequestPayload());
+            // 压缩
+            Compressor compressor = CompressorFactory.getCompressor(drpcRequest.getCompressType()).getCompressor();
+            body = compressor.compress(body);
+        }
+        if(body != null ){
+            byteBuf.writeBytes(body);
+        }
         int bodyLength = body == null ? 0 : body.length;
         // 记录写指针位置
         int writeIndex = byteBuf.writerIndex();

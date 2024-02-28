@@ -91,13 +91,15 @@ public class DrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         int bodyLength = fullLength - headerLength;
         byte[] body = new byte[bodyLength];
         byteBuf.readBytes(body);
-        // 解压缩
-        Compressor compressor = CompressorFactory.getCompressor(compressType).getCompressor();
-        byte[] decompress = compressor.decompress(body);
-        // 反序列化
-        Serializer serializer = SerializerFactory.getSerializer(serializeType).getSerializer();
-        Object object = serializer.deserialize(decompress, Object.class);
-        drpcResponse.setBody(object);
+        if(body != null && body.length != 0){
+            // 解压缩
+            Compressor compressor = CompressorFactory.getCompressor(compressType).getCompressor();
+            byte[] decompress = compressor.decompress(body);
+            // 反序列化
+            Serializer serializer = SerializerFactory.getSerializer(serializeType).getSerializer();
+            Object object = serializer.deserialize(decompress, Object.class);
+            drpcResponse.setBody(object);
+        }
 
         log.debug("通信【{}】在客户端完整解码",drpcResponse.getRequestId());
         return drpcResponse;

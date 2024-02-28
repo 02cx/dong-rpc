@@ -3,11 +3,11 @@ package com.dong;
 import com.dong.channel.handler.DrpcRequestDecoder;
 import com.dong.channel.handler.DrpcResponseEncoder;
 import com.dong.channel.handler.MethodCallHandler;
+import com.dong.core.HeartbeatDetection;
 import com.dong.discovery.Register;
 import com.dong.discovery.RegisterConfig;
 import com.dong.loadbalance.LoadBalance;
 import com.dong.loadbalance.impl.ConsistentHashLoadBalance;
-import com.dong.loadbalance.impl.RoundRobinLoadBalance;
 import com.dong.transport.message.DrpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,7 +57,10 @@ public class DrpcBootstrap {
     // 定义全局的completableFuture
     public static final Map<Long, CompletableFuture<Object>> PENDING_REQUEST = new ConcurrentHashMap<>(16);
 
+    public static final Map<Long, Channel> ANSWER_TIME_CHANNEL_CACHE = new TreeMap<>();
+
     public static final ThreadLocal<DrpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
+
 
     public DrpcBootstrap() {
         // 构造启动引导程序时需要做的一些配置
@@ -183,6 +187,8 @@ public class DrpcBootstrap {
      */
 
     public DrpcBootstrap reference(ReferenceConfig<?> reference) {
+        // 开启对这个服务的心跳检测
+        HeartbeatDetection.detectHeartbeat(reference.getInterface().getName());
         // 在这个方法里是否可以拿到相关配置-----注册中心
         // 配置reference，将来调用get时，方便生成代理对象
         reference.setRegister(register);
