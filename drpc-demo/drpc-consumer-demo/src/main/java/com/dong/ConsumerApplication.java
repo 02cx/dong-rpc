@@ -34,15 +34,23 @@ public class ConsumerApplication {
                 .reference(reference);
 
         // 获取代理对象
+        System.out.println("=========================================================================================");
         HelloDrpc helloDrpc = reference.get();
 
-/*        String result = helloDrpc.sayHi("hi drpc");
-        log.info("服务消费者接收到的消息：{}",result);*/
+        while(true){
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
-        for (int i = 0; i < 50; i++) {
-            String result = helloDrpc.sayHi("hi drpc");
-            log.info("服务消费者接收到的消息：{}",result);
+            for (int i = 0; i < 5; i++) {
+                String result = helloDrpc.sayHi("hi drpc");
+                log.info("服务消费者接收到的消息：{}",result);
+            }
         }
+
+
 
     }
 }

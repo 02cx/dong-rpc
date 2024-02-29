@@ -1,5 +1,6 @@
 package com.dong;
 
+import com.dong.annotation.DrpcApi;
 import com.dong.channel.handler.DrpcRequestDecoder;
 import com.dong.channel.handler.DrpcResponseEncoder;
 import com.dong.channel.handler.MethodCallHandler;
@@ -7,7 +8,6 @@ import com.dong.core.HeartbeatDetection;
 import com.dong.discovery.Register;
 import com.dong.discovery.RegisterConfig;
 import com.dong.loadbalance.LoadBalance;
-import com.dong.loadbalance.impl.ConsistentHashLoadBalance;
 import com.dong.loadbalance.impl.MinimumResponseTimeLoadBalance;
 import com.dong.transport.message.DrpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
@@ -19,12 +19,17 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -40,20 +45,20 @@ public class DrpcBootstrap {
     private RegisterConfig registerConfig;
     private ProtocolConfig protocolConfig;
     public static int port = 8082;
-    public static final IdGenerator ID_GENERATOR = new IdGenerator(1L,2L);
+    public static final IdGenerator ID_GENERATOR = new IdGenerator(1L, 2L);
     public static String SERIALIZE_TYPE = "jdk";
     public static String COMPRESSOR_TYPE = "gzip";
 
     // 注册中心
     private Register register;
 
-    public static  LoadBalance LOAD_BALANCE;
+    public static LoadBalance LOAD_BALANCE;
 
     // 缓存channel连接
-    public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE  = new ConcurrentHashMap<>(16);
+    public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(16);
 
     // 维护已经发布的服务列表   key---->interface全限定名   value---->ServiceConfig
-    public static final Map<String,ServiceConfig<?>> SERVER_LIST = new ConcurrentHashMap<>(16);
+    public static final Map<String, ServiceConfig<?>> SERVER_LIST = new ConcurrentHashMap<>(16);
 
     // 定义全局的completableFuture
     public static final Map<Long, CompletableFuture<Object>> PENDING_REQUEST = new ConcurrentHashMap<>(16);
@@ -124,7 +129,7 @@ public class DrpcBootstrap {
         register.register(service);
         // 服务调用方根据接口名，方法名，参数列表发起调用，服务提供者怎么知道是哪一个实现？
         // 1.new 一个   2.spring   beanFactory.getBean(Class)  3.自己维护映射关系
-        SERVER_LIST.put(service.getInterface().getName(),service);
+        SERVER_LIST.put(service.getInterface().getName(), service);
 
         return this;
     }
@@ -177,7 +182,7 @@ public class DrpcBootstrap {
 
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             worker.shutdownGracefully();
             boss.shutdownGracefully();
         }
@@ -209,5 +214,102 @@ public class DrpcBootstrap {
 
     public Register getRegister() {
         return register;
+    }
+
+    public DrpcBootstrap scan(String packageName) {
+        // 通过packageName获取其下的所有的类的全限定名称
+        List<String> classNames = getAllClassName(packageName);
+        // 通过反射获取接口，构建具体实现
+        List<Class<?>> classes = classNames.stream()
+                .map(className -> {
+                    try {
+                        return Class.forName(className);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).filter(clazz -> clazz.getAnnotation(DrpcApi.class) != null)
+                .collect(Collectors.toList());
+        for (Class<?> clazz : classes) {
+            // 获取他的接口
+            Class<?>[] interfaces = clazz.getInterfaces();
+            Object instance = null;
+            try {
+                instance = clazz.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+
+            List<ServiceConfig<?>> serviceConfigs = new ArrayList<>();
+            for(Class<?> dinterface : interfaces){
+                ServiceConfig<?> serviceConfig = new ServiceConfig<>();
+                serviceConfig.setInterface(dinterface);
+                serviceConfig.setRef(instance);
+                serviceConfigs.add(serviceConfig);
+            }
+            // 发布
+            publish(serviceConfigs);
+        }
+        return this;
+    }
+
+    private List<String> getAllClassName(String packageName) {
+        // 通过packageName获得绝对路径
+        String basePath = packageName.replaceAll("\\.", "/");
+        URL url = ClassLoader.getSystemClassLoader().getResource(basePath);
+        if (url == null) {
+            throw new RuntimeException("包扫描时，发现路径不存在");
+        }
+        String absolutePath = url.getPath();
+        List<String> classNames = new ArrayList<>();
+        classNames = recursionFile(absolutePath, classNames, basePath);
+        return classNames;
+    }
+
+    private List<String> recursionFile(String absolutePath, List<String> classNames, String basePath) {
+        // 获取文件
+        File file = new File(absolutePath);
+        // 判断文件是否是文件夹
+        if (file.isDirectory()) {
+            // 找到文件夹的所有文件
+            File[] children = file.listFiles(pathname -> pathname.isDirectory() || pathname.getPath().contains(".class"));
+            if (children == null || children.length == 0) {
+                return classNames;
+            }
+            for (File child : children) {
+                if (child.isDirectory()) {
+                    // 递归调用
+                    recursionFile(child.getAbsolutePath(), classNames, basePath);
+                } else {
+                    // 将文件转为全限定名称
+                    String className = getClassNameByAbsolutePath(child.getAbsolutePath(), basePath);
+                    classNames.add(className);
+                }
+            }
+        } else {
+            // 将文件转为全限定名称
+            String className = getClassNameByAbsolutePath(absolutePath, basePath);
+            classNames.add(className);
+        }
+        return classNames;
+    }
+
+    // D:\IDEAwork\dong-drpc\drpc-framework\drpc-core\target\classes\com\dong\watch\UpAndDownWatch.class
+    //  --->
+    // com\dong\watch\UpAndDownWatch.class   ---> com.dong.watch.UpAndDownWatch
+    private String getClassNameByAbsolutePath(String absolutePath, String basePath) {
+        // D:\IDEAwork\dong-drpc\drpc-framework\drpc-core\target\classes\com\dong\watch\UpAndDownWatch.class
+        //  ---->
+        //  com\dong\watch\UpAndDownWatch.class
+        String substring = absolutePath
+                .substring(absolutePath.indexOf(basePath.replaceAll("/", "\\\\")));
+        //  ---->  com.dong.watch.UpAndDownWatch
+        String fileName = substring.replaceAll("\\\\", ".");
+        String result = fileName.substring(0, fileName.indexOf(".class"));
+        return result;
+    }
+
+    public static void main(String[] args) {
+        DrpcBootstrap.getInstance().getAllClassName("com.dong");
     }
 }
