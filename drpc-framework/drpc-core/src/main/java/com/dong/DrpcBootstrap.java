@@ -8,6 +8,7 @@ import com.dong.discovery.Register;
 import com.dong.discovery.RegisterConfig;
 import com.dong.loadbalance.LoadBalance;
 import com.dong.loadbalance.impl.ConsistentHashLoadBalance;
+import com.dong.loadbalance.impl.MinimumResponseTimeLoadBalance;
 import com.dong.transport.message.DrpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -38,7 +39,7 @@ public class DrpcBootstrap {
     private String applicationName;
     private RegisterConfig registerConfig;
     private ProtocolConfig protocolConfig;
-    public static int port = 8093;
+    public static int port = 8086;
     public static final IdGenerator ID_GENERATOR = new IdGenerator(1L,2L);
     public static String SERIALIZE_TYPE = "jdk";
     public static String COMPRESSOR_TYPE = "gzip";
@@ -95,7 +96,7 @@ public class DrpcBootstrap {
         // 类似工厂方法模式
         this.register = registerConfig.getRegister();
         //WYD TODO 2024-02-26: 需要修改负载均衡策略
-        LOAD_BALANCE = new ConsistentHashLoadBalance();
+        LOAD_BALANCE = new MinimumResponseTimeLoadBalance();
         return this;
     }
 

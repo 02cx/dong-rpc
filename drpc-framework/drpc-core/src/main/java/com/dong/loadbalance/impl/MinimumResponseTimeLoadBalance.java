@@ -5,12 +5,14 @@ import com.dong.loadbalance.AbstractLoadBalance;
 import com.dong.loadbalance.LoadBalance;
 import com.dong.loadbalance.Selector;
 import io.netty.channel.Channel;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class MinimumResponseTimeLoadBalance extends AbstractLoadBalance {
 
     @Override
@@ -28,6 +30,7 @@ public class MinimumResponseTimeLoadBalance extends AbstractLoadBalance {
             }
             // 直接从缓存中获取一个可用的
             Channel channel = (Channel) DrpcBootstrap.CHANNEL_CACHE.values().toArray()[0];
+            log.debug("选取的服务响应时间是【{}】ms",entry.getKey());
             return (InetSocketAddress) channel.remoteAddress();
         }
 
