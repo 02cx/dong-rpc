@@ -34,9 +34,5 @@ public class MinimumResponseTimeLoadBalance extends AbstractLoadBalance {
             return (InetSocketAddress) channel.remoteAddress();
         }
 
-        @Override
-        public void reLoadBalance() {
-
-        }
     }
 }

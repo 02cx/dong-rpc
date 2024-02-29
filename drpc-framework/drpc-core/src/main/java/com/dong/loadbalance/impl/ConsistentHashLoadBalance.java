@@ -89,9 +89,5 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             return rv;
         }
 
-        @Override
-        public void reLoadBalance() {
-
-        }
     }
 }

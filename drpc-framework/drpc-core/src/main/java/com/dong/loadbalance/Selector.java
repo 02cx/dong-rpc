@@ -11,6 +11,4 @@ public interface Selector {
      */
     InetSocketAddress getNext();
 
-
-    void reLoadBalance();
 }

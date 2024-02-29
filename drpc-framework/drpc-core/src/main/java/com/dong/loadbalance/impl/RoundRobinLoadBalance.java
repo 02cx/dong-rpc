@@ -54,9 +54,5 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             return inetSocketAddress;
         }
 
-        @Override
-        public void reLoadBalance() {
-
-        }
     }
 }

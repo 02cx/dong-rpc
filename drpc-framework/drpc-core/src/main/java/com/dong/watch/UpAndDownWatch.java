@@ -3,6 +3,7 @@ package com.dong.watch;
 import com.dong.DrpcBootstrap;
 import com.dong.NettyBootstrapInitializer;
 import com.dong.discovery.Register;
+import com.dong.loadbalance.LoadBalance;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.WatchedEvent;
@@ -46,6 +47,9 @@ public class UpAndDownWatch implements Watcher {
                 }
             }
 
+            // 获得负载均衡器，进行重新的负载均衡
+            LoadBalance loadBalance = DrpcBootstrap.LOAD_BALANCE;
+            loadBalance.reLoadBalance(serviceName,addresses);
         }
     }
 

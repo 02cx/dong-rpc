@@ -28,6 +28,11 @@ public abstract class AbstractLoadBalance implements LoadBalance{
         return selector.getNext();
     }
 
+    @Override
+    public synchronized void reLoadBalance(String serviceName,List<InetSocketAddress> addresses) {
+        cache.put(serviceName,getSelector(addresses));
+    }
+
     /**
      *  由子类扩展
      * @param serviceList
