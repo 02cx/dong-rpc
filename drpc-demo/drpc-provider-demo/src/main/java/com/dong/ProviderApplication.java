@@ -19,7 +19,7 @@ public class ProviderApplication {
                 .application("first-drpc-provider")   // 应用名称
                 .register(new RegisterConfig("zookeeper://192.168.183.130:2181"))  // 注册中心
                 .protocol(new ProtocolConfig("jdk"))  // 协议
-                .publish(serviceConfig)  // 发布服务
+                //.publish(serviceConfig)  // 发布服务
                 .scan("com.dong") // 扫包进行批量发布
                 .start();  // 启动服务
     }

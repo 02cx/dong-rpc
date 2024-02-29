@@ -40,19 +40,9 @@ public class DrpcBootstrap {
     // DrpcBootstrap是一个单例，一个应用程序一个示例
     public static final DrpcBootstrap drpcBootstrap = new DrpcBootstrap();
 
-    // 定义一些初始配置
-    private String applicationName;
-    private RegisterConfig registerConfig;
-    private ProtocolConfig protocolConfig;
-    public static int port = 8082;
-    public static final IdGenerator ID_GENERATOR = new IdGenerator(1L, 2L);
-    public static String SERIALIZE_TYPE = "jdk";
-    public static String COMPRESSOR_TYPE = "gzip";
+    private Configuration configuration;
 
-    // 注册中心
-    private Register register;
 
-    public static LoadBalance LOAD_BALANCE;
 
     // 缓存channel连接
     public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(16);
@@ -70,6 +60,7 @@ public class DrpcBootstrap {
 
     public DrpcBootstrap() {
         // 构造启动引导程序时需要做的一些配置
+        configuration = new Configuration();
     }
 
     public static DrpcBootstrap getInstance() {
@@ -87,7 +78,7 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap application(String applicationName) {
-        this.applicationName = applicationName;
+        configuration.setApplicationName(applicationName);
         return this;
     }
 
@@ -99,9 +90,17 @@ public class DrpcBootstrap {
      */
     public DrpcBootstrap register(RegisterConfig registerConfig) {
         // 类似工厂方法模式
-        this.register = registerConfig.getRegister();
-        //WYD TODO 2024-02-26: 需要修改负载均衡策略
-        LOAD_BALANCE = new MinimumResponseTimeLoadBalance();
+        configuration.setRegisterConfig(registerConfig);
+        return this;
+    }
+
+    /**
+     *  配置负载均衡策略
+     * @param loadBalance 负载均衡策略
+     * @return this
+     */
+    public DrpcBootstrap loadBalance(LoadBalance loadBalance){
+        configuration.setLoadBalance(loadBalance);
         return this;
     }
 
@@ -112,9 +111,8 @@ public class DrpcBootstrap {
      * @return this
      */
     public DrpcBootstrap protocol(ProtocolConfig protocolConfig) {
-        this.protocolConfig = protocolConfig;
+        configuration.setProtocolConfig(protocolConfig);
         log.debug("当前工程使用的协议：" + protocolConfig.toString());
-
         return this;
     }
 
@@ -126,7 +124,7 @@ public class DrpcBootstrap {
      */
     public DrpcBootstrap publish(ServiceConfig<?> service) {
         // 实现注册
-        register.register(service);
+        configuration.getRegisterConfig().getRegister().register(service);
         // 服务调用方根据接口名，方法名，参数列表发起调用，服务提供者怎么知道是哪一个实现？
         // 1.new 一个   2.spring   beanFactory.getBean(Class)  3.自己维护映射关系
         SERVER_LIST.put(service.getInterface().getName(), service);
@@ -161,7 +159,7 @@ public class DrpcBootstrap {
             // 配置服务器
             serverBootstrap.group(boss, worker)
                     .channel(NioServerSocketChannel.class)
-                    .localAddress(new InetSocketAddress(port)) // 设置监听端口
+                    .localAddress(new InetSocketAddress(configuration.getPort())) // 设置监听端口
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         // 核心   添加发送消息时的处理器
                         @Override
@@ -197,23 +195,23 @@ public class DrpcBootstrap {
         HeartbeatDetection.detectHeartbeat(reference.getInterface().getName());
         // 在这个方法里是否可以拿到相关配置-----注册中心
         // 配置reference，将来调用get时，方便生成代理对象
-        reference.setRegister(register);
+        reference.setRegister(configuration.getRegisterConfig().getRegister());
         return this;
     }
 
 
     public DrpcBootstrap serialize(String serializeType) {
-        SERIALIZE_TYPE = serializeType;
+        configuration.setSerializeType(serializeType);
         return this;
     }
 
     public DrpcBootstrap compress(String compressType) {
-        COMPRESSOR_TYPE = compressType;
+        configuration.setCompressorType(compressType);
         return this;
     }
 
     public Register getRegister() {
-        return register;
+        return configuration.getRegisterConfig().getRegister();
     }
 
     public DrpcBootstrap scan(String packageName) {
@@ -240,15 +238,15 @@ public class DrpcBootstrap {
                 throw new RuntimeException(e);
             }
 
-            List<ServiceConfig<?>> serviceConfigs = new ArrayList<>();
             for(Class<?> dinterface : interfaces){
                 ServiceConfig<?> serviceConfig = new ServiceConfig<>();
                 serviceConfig.setInterface(dinterface);
                 serviceConfig.setRef(instance);
-                serviceConfigs.add(serviceConfig);
+                log.debug("----->通过包扫描，将服务【{}】发布",dinterface);
+                // 发布
+                publish(serviceConfig);
             }
-            // 发布
-            publish(serviceConfigs);
+
         }
         return this;
     }
@@ -311,5 +309,12 @@ public class DrpcBootstrap {
 
     public static void main(String[] args) {
         DrpcBootstrap.getInstance().getAllClassName("com.dong");
+    }
+
+
+
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 }

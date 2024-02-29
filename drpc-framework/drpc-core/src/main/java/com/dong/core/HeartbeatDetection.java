@@ -1,5 +1,6 @@
 package com.dong.core;
 
+import com.dong.Configuration;
 import com.dong.DrpcBootstrap;
 import com.dong.NettyBootstrapInitializer;
 import com.dong.compress.CompressorFactory;
@@ -69,10 +70,11 @@ public class HeartbeatDetection {
                     long startTime = System.currentTimeMillis();
                     Channel channel = entry.getValue();
                     // 构建心跳请求
+                    Configuration configuration = DrpcBootstrap.getInstance().getConfiguration();
                     DrpcRequest drpcRequest = DrpcRequest.builder()
-                            .requestId(DrpcBootstrap.ID_GENERATOR.getId())
-                            .compressType(CompressorFactory.getCompressor(DrpcBootstrap.COMPRESSOR_TYPE).getCode())
-                            .serializeType(SerializerFactory.getSerializer(DrpcBootstrap.SERIALIZE_TYPE).getCode())
+                            .requestId(configuration.getIdGenerator().getId())
+                            .compressType(CompressorFactory.getCompressor(configuration.getCompressorType()).getCode())
+                            .serializeType(SerializerFactory.getSerializer(configuration.getSerializeType()).getCode())
                             .requestType((RequestType.HEAD_BEAT.getId()))
                             .build();
                     // 发送消息，异步监听

@@ -48,7 +48,7 @@ public class UpAndDownWatch implements Watcher {
             }
 
             // 获得负载均衡器，进行重新的负载均衡
-            LoadBalance loadBalance = DrpcBootstrap.LOAD_BALANCE;
+            LoadBalance loadBalance = DrpcBootstrap.getInstance().getConfiguration().getLoadBalance();
             loadBalance.reLoadBalance(serviceName,addresses);
         }
     }

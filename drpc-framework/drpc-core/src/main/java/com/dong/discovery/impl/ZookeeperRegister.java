@@ -44,7 +44,7 @@ public class ZookeeperRegister extends AbstractRegistry {
 
         // 创建本机临时节点，  ip:port
         //WYD TODO 2024-02-22: 后续处理全局端口问题
-        String node = parentNode + "/" + NetUtils.getIpAddress() + ":" + DrpcBootstrap.port;
+        String node = parentNode + "/" + NetUtils.getIpAddress() + ":" + DrpcBootstrap.getInstance().getConfiguration().getPort();
         if(!ZookeeperUtils.exists(zooKeeper,node,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(node, null);
             ZookeeperUtils.createNode(zooKeeper, zookeeperNode, null, CreateMode.EPHEMERAL);

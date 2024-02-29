@@ -1,5 +1,6 @@
 package com.dong.proxy.handler;
 
+import com.dong.Configuration;
 import com.dong.DrpcBootstrap;
 import com.dong.NettyBootstrapInitializer;
 import com.dong.compress.CompressorFactory;
@@ -46,11 +47,11 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
                 .methodName(method.getName())
                 .parametersType(method.getParameterTypes())
                 .parametersValue(args).build();
-
+        Configuration configuration = DrpcBootstrap.getInstance().getConfiguration();
         DrpcRequest drpcRequest = DrpcRequest.builder()
-                .requestId(DrpcBootstrap.ID_GENERATOR.getId())
-                .compressType(CompressorFactory.getCompressor(DrpcBootstrap.COMPRESSOR_TYPE).getCode())
-                .serializeType(SerializerFactory.getSerializer(DrpcBootstrap.SERIALIZE_TYPE).getCode())
+                .requestId(configuration.getIdGenerator().getId())
+                .compressType(CompressorFactory.getCompressor(configuration.getCompressorType()).getCode())
+                .serializeType(SerializerFactory.getSerializer(configuration.getSerializeType()).getCode())
                 .requestType((RequestType.REQUEST.getId()))
                 .requestPayload(payload).build();
 
@@ -58,7 +59,7 @@ public class DrpcConsumerInvocationHandler<T> implements InvocationHandler {
         DrpcBootstrap.REQUEST_THREAD_LOCAL.set(drpcRequest);
 
         // 1.拉取服务  服务名   返回ip+端口
-        InetSocketAddress inetSocketAddress = DrpcBootstrap.LOAD_BALANCE.selectServiceAddress(interfaceRef.getName());
+        InetSocketAddress inetSocketAddress = configuration.getLoadBalance().selectServiceAddress(interfaceRef.getName());
 
         if (log.isDebugEnabled()) {
             log.debug("服务调用方从注册中心拉取了服务【{}】", inetSocketAddress);
