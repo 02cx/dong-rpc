@@ -39,7 +39,7 @@ public class DrpcBootstrap {
     private String applicationName;
     private RegisterConfig registerConfig;
     private ProtocolConfig protocolConfig;
-    public static int port = 8086;
+    public static int port = 8082;
     public static final IdGenerator ID_GENERATOR = new IdGenerator(1L,2L);
     public static String SERIALIZE_TYPE = "jdk";
     public static String COMPRESSOR_TYPE = "gzip";

@@ -8,8 +8,11 @@ import com.dong.exceptions.NetworkException;
 import com.dong.utils.NetUtils;
 import com.dong.utils.zookeeper.ZookeeperNode;
 import com.dong.utils.zookeeper.ZookeeperUtils;
+import com.dong.watch.UpAndDownWatch;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.net.InetSocketAddress;
@@ -56,7 +59,7 @@ public class ZookeeperRegister extends AbstractRegistry {
         // 1。找到服务对应的节点
         String serviceNode = Constant.BASE_PROVIDER_PATH + "/" + serviceName;
         // 2.从zk中获取它的子节点
-        List<String> children = ZookeeperUtils.getChildren(zooKeeper, serviceNode, null);
+        List<String> children = ZookeeperUtils.getChildren(zooKeeper, serviceNode, new UpAndDownWatch());
         List<InetSocketAddress> list = children.stream().map(ipString -> {
             String[] ipAndPort = ipString.split(":");
             return new InetSocketAddress(ipAndPort[0], Integer.valueOf(ipAndPort[1]));
