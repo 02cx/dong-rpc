@@ -10,6 +10,7 @@ import org.apache.zookeeper.Watcher;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -35,6 +36,13 @@ public class UpAndDownWatch implements Watcher {
                         throw new RuntimeException(e);
                     }
                     DrpcBootstrap.CHANNEL_CACHE.put(address,channel);
+                }
+            }
+
+            // 处理下线的节点
+            for (Map.Entry<InetSocketAddress,Channel> entry : DrpcBootstrap.CHANNEL_CACHE.entrySet()) {
+                if(!addresses.contains(entry.getKey())){
+                    DrpcBootstrap.CHANNEL_CACHE.remove(entry.getKey());
                 }
             }
 
