@@ -192,7 +192,7 @@ public class DrpcBootstrap {
 
     public DrpcBootstrap reference(ReferenceConfig<?> reference) {
         // 开启对这个服务的心跳检测
-        HeartbeatDetection.detectHeartbeat(reference.getInterface().getName());
+         HeartbeatDetection.detectHeartbeat(reference.getInterface().getName());
         // 在这个方法里是否可以拿到相关配置-----注册中心
         // 配置reference，将来调用get时，方便生成代理对象
         reference.setRegister(configuration.getRegisterConfig().getRegister());

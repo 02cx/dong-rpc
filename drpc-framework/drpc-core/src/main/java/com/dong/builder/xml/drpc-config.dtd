@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--        <!ELEMENT configuration ( port?,
+                applicationName?, register?,
+                serializeType?, serialize?,
+                compressorType?, compressor?,
+                loadBalanceType?, loadBalance?,
+                idGenerator?
+                )>-->
+
+        <!ELEMENT configuration ANY)>
+
+        <!ELEMENT port ANY>
+
+        <!ELEMENT applicationName ANY>
+
+        <!ELEMENT register EMPTY>
+        <!ATTLIST register
+                url CDATA #REQUIRED
+                >
+
+        <!ELEMENT serializeType EMPTY>
+        <!ATTLIST serializeType
+                type CDATA #REQUIRED
+                >
+
+        <!ELEMENT serialize EMPTY>
+        <!ATTLIST serialize
+                class CDATA #REQUIRED
+                >
+
+        <!ELEMENT compressorType EMPTY>
+        <!ATTLIST compressorType
+                type CDATA #REQUIRED
+                >
+
+        <!ELEMENT compressor EMPTY>
+        <!ATTLIST compressor
+                class CDATA #REQUIRED
+                >
+
+        <!ELEMENT loadBalanceType EMPTY>
+        <!ATTLIST loadBalanceType
+                type CDATA #REQUIRED
+                >
+
+        <!ELEMENT loadBalance EMPTY>
+        <!ATTLIST loadBalance
+                class CDATA #REQUIRED
+                >
+
+        <!ELEMENT idGenerator EMPTY>
+        <!ATTLIST idGenerator
+                class CDATA #REQUIRED
+                dataCenterId CDATA #REQUIRED
+                machineId CDATA #REQUIRED
+                >
+

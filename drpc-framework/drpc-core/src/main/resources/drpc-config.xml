@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration SYSTEM "http://dong.com/drpc-config.dtd">
+<configuration>
+
+    <port>8010</port>
+    <applicationName>drpc-default-name</applicationName>
+    <register url="zookeeper://192.168.183.130:2181"/>
+
+    <serialize class="com.dong.serialize.impl.HessianSerializer"/>
+    <compressorType type="gzip"/>
+
+    <idGenerator class="com.dong.IdGenerator" dataCenterId="2" machineId="2"/>
+
+    <loadBalance class="com.dong.loadbalance.impl.RoundRobinLoadBalance"/>
+
+</configuration>
